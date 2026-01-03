@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+   <link rel="stylesheet"
+ href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+<meta charset="UTF-8">
+<title>Closet Orion | Tienda Online</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+body{background:#f2f2f2;}
+.bg-brand{background:#1f8ea3;}
+.btn-brand{background:#1f8ea3;color:white;}
+.btn-brand:hover{background:#176f80;}
+
+.category-title{
+ color:#1f8ea3;
+ border-left:6px solid #1f8ea3;
+ padding-left:10px;
+ margin:30px 0 20px;
+}
+
+.card img{height:460px;object-fit:cover;}
+
+.color-dot{
+ width:18px;height:18px;border-radius:50%;
+ display:inline-block;margin:4px;
+ border:1px solid #ccc;cursor:pointer;
+}
+.color-dot.active{outline:2px solid #000;}
+
+.color-filter{
+ width:22px;height:22px;border-radius:50%;
+ border:2px solid #ddd;
+ cursor:pointer;
+}
+.color-filter.active{outline:3px solid #1f8ea3;}
+
+.qty-box{display:flex;justify-content:center;align-items:center;}
+.qty-box button{width:32px;height:32px;}
+.qty-box span{width:30px;text-align:center;}
+
+/* 🟢 MINI PREVIEW IMG */
+.cart-thumb{
+ width:60px;height:60px;object-fit:cover;
+ border-radius:10px;
+}
+
+/* ⭐ ANIMACIÓN AL AGREGAR */
+.added-anim{
+ animation: bump .45s ease;
+}
+@keyframes bump{
+ 0%{transform:scale(1);}
+ 40%{transform:scale(1.25);}
+ 100%{transform:scale(1);}
+}
+
+/* 🛒 BOTÓN FLOTANTE */
+.floating-cart{
+ position:fixed;
+ bottom:22px;
+ right:18px;
+ z-index:999;
+ border-radius:50%;
+ padding:14px 16px;
+ box-shadow:0 6px 18px rgba(0,0,0,.35);
+}
+
+.cart-counter{
+ position:absolute;
+ top:-6px;
+ right:-6px;
+ background:#dc3545;
+ color:white;
+ font-size:.8rem;
+ padding:2px 7px;
+ border-radius:50%;
+}
+
+/* animación contador */
+.counter-pop{animation:pop .35s ease;}
+@keyframes pop{
+ 0%{transform:scale(.7);}
+ 60%{transform:scale(1.25);}
+ 100%{transform:scale(1);}
+}
+
+/* Redes sociales */
+.social-bar{
+ display:flex;
+ justify-content:center;
+ gap:14px;
+ margin-top:10px;
+}
+
+.social-icon{
+ width:38px;
+ height:38px;
+ border-radius:50%;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ background:#1f8ea3;
+ color:white;
+ font-size:20px;
+ text-decoration:none;
+ transition:.2s;
+}
+
+.social-icon:hover{
+ background:#176f80;
+ transform:scale(1.08);
+}
+
+
+
+</style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-secondary bg-secondary">
+ <div class="container">
+  <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+   <img src="imagenes/logo.png" alt="Closet Orion" height="100">
+   <span class="fw-bold">Closet Orion</span>
+  </a>
+ </div>
+</nav>
+
+<section class="bg-brand text-white text-center py-5">
+ <div class="container">
+  <h1 class="display-5">Moda femenina</h1>
+  <p class="lead">Estilo, comodidad y tendencia</p>
+ </div>
+</section>
+
+<!-- 🔎 FILTROS -->
+<section class="container py-3">
+ <div class="row g-2">
+
+  <div class="col-12 col-md-4">
+   <input id="buscador" class="form-control" placeholder="Buscar producto..." onkeyup="aplicarFiltros()">
+  </div>
+
+  <div class="col-6 col-md-2">
+   <select id="filtroCategoria" class="form-select" onchange="aplicarFiltros()">
+    <option value="todas">Categorías</option>
+   </select>
+  </div>
+
+  <div class="col-6 col-md-2">
+   <select id="filtroTela" class="form-select" onchange="aplicarFiltros()">
+    <option value="">Tipo de tela</option>
+   </select>
+  </div>
+
+  <div class="col-6 col-md-2">
+   <select id="ordenPrecio" class="form-select" onchange="aplicarFiltros()">
+    <option value="">Ordenar precio</option>
+    <option value="asc">Menor a mayor</option>
+    <option value="desc">Mayor a menor</option>
+   </select>
+  </div>
+
+ </div>
+
+ <div class="d-flex gap-2 flex-wrap mt-2" id="filtroColores"></div>
+</section>
+
+<section class="container py-4">
+ <div id="catalogo"></div>
+</section>
+
+<!-- 🛒 PANEL / LISTA -->
+<section class="container py-5" id="panelCarrito">
+ <h2 class="text-center mb-4">Carrito</h2>
+
+ <ul class="list-group mb-3" id="lista"></ul>
+
+ <h5>Total: $<span id="total">0</span></h5>
+
+ <input class="form-control mb-2" id="nombre" placeholder="Nombre">
+ <input class="form-control mb-2" id="celular" placeholder="Celular">
+ <input class="form-control mb-2" id="direccion" placeholder="Dirección">
+
+ <button class="btn btn-success w-100" onclick="abrirConfirmacionPedido()">
+  Finalizar por WhatsApp
+ </button>
+
+ <div id="mensajeError" class="alert alert-danger mt-3 d-none"></div>
+</section>
+
+<section class="text-center py-3">
+ <h6 class="mb-2">Síguenos en nuestras redes</h6>
+
+ <div class="social-bar">
+
+   <!-- Facebook -->
+   <a class="social-icon"
+      href="https://www.facebook.com/profile.php?id=61586044407642"
+      target="_blank">
+     <i class="bi bi-facebook"></i>
+   </a>
+
+   <!-- Instagram -->
+   <a class="social-icon"
+      href="https://www.instagram.com/closet.orion/"
+      target="_blank">
+     <i class="bi bi-instagram"></i>
+   </a>
+
+   <!-- TikTok -->
+   <a class="social-icon"
+      href="https://www.tiktok.com/@closet_orion?lang=es-419"
+      target="_blank">
+     <i class="bi bi-tiktok"></i>
+   </a>
+
+
+
+ </div>
+</section>
+
+<footer class="text-center py-3 bg-dark text-white">
+ © 2025 Closet Orion
+</footer>
+
+
+<!-- 🟢 BOTÓN FLOTANTE CARRITO -->
+<button class="btn btn-brand floating-cart" onclick="scrollToCarrito()" id="btnCartFloat">
+ 🛒
+ <span id="cartCount" class="cart-counter">0</span>
+</button>
+
+<!-- MODAL CONFIRMACIÓN -->
+<div class="modal fade" id="modalConfirmarPedido" tabindex="-1">
+ <div class="modal-dialog modal-dialog-centered">
+  <div class="modal-content">
+
+   <div class="modal-header">
+    <h5 class="modal-title">Confirmar pedido</h5>
+    <button class="btn-close" data-bs-dismiss="modal"></button>
+   </div>
+
+   <div class="modal-body">
+    <p class="mb-2">Revisa los detalles antes de enviar:</p>
+    <div id="resumenPedido" class="small"></div>
+    <hr>
+    <p class="fw-bold mb-0">
+     Total a pagar: <span id="totalConfirmacion"></span>
+    </p>
+   </div>
+
+   <div class="modal-footer">
+    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+    <button class="btn btn-success" id="btnConfirmarEnvio">Confirmar y enviar por WhatsApp</button>
+   </div>
+
+  </div>
+ </div>
+</div>
+
+<script>
+/* =========================
+   DATOS BASE
+========================= */
+const colores={
+ negro:"#000000", blanco:"#ffffff", gris:"#808080", amarillo:"#ffd700", azul:"#1e90ff", 
+ rojo:"#dc143c", marrón:"#8b4513", verde:"#2e8b57", rosa:"#ff69b4", púrpura:"#800080",
+ beige:"#f5f5dc", mostaza:"#d4a017"
+};
+const tallas=["S","M","L","XL"];
+
+const categorias={
+  "Faldas":[
+  {nombre:"Falda casual",precio:18,tela:"Algodón",img:"imagenes/faldacasual.jpg",colores:Object.keys(colores)},
+  {nombre:"Falda jean",precio:20,tela:"Jean suave",img:"imagenes/faldajean.webp",colores:Object.keys(colores)},
+  {nombre:"Falda plisada",precio:22,tela:"Poliéster",img:"imagenes/faldaplisada.jpg",colores:Object.keys(colores)},
+  {nombre:"Falda elegante",precio:26,tela:"Seda sintética",img:"imagenes/faldaelegante.jpg",colores:Object.keys(colores)}
+ ],
+
+ "Shorts":[
+  {nombre:"Short deportivo",precio:15,tela:"Microfibra",img:"imagenes/shortdeportivo.jpg",colores:Object.keys(colores)},
+  {nombre:"Short casual",precio:17,tela:"Algodón",img:"imagenes/shortcasual.jpg",colores:Object.keys(colores)},
+  {nombre:"Short jean",precio:19,tela:"Jean",img:"imagenes/shortjean.png",colores:Object.keys(colores)},
+  {nombre:"Short tiro alto",precio:21,tela:"Stretch",img:"imagenes/shorttiroalto.avif",colores:Object.keys(colores)},
+  {nombre:"Short verano",precio:18,tela:"Lino",img:"imagenes/shortverano.webp",colores:Object.keys(colores)}
+ ],
+
+ "Conjuntos deportivos":[
+  {nombre:"Conjunto básico",precio:32,tela:"Lycra algodón",img:"imagenes/conjuntobasico.avif",colores:Object.keys(colores)},
+  {nombre:"Conjunto training",precio:35,tela:"Compresión",img:"imagenes/conjuntotraining.jpg",colores:Object.keys(colores)},
+  {nombre:"Conjunto fitness",precio:38,tela:"Lycra premium",img:"imagenes/conjuntofitness.jpg",colores:Object.keys(colores)},
+ ],
+
+ "Vestidos":[
+  {nombre:"Vestido casual",precio:30,tela:"Rib",img:"imagenes/vestidocasual.webp",colores:Object.keys(colores)},
+  {nombre:"Vestido deportivo",precio:34,tela:"Lycra",img:"imagenes/vestidodeportivo.webp",colores:Object.keys(colores)},
+  {nombre:"Vestido floral",precio:42,tela:"Seda sintética",img:"imagenes/vestidofloral.jpg",colores:Object.keys(colores)},
+ ],
+
+ "Blusas":[
+  {nombre:"Blusa casual",precio:20,tela:"Algodón",img:"imagenes/blusacasual.webp",colores:Object.keys(colores)},
+  {nombre:"Blusa moderna",precio:22,tela:"Lycra",img:"imagenes/blusamoderna.jpg",colores:Object.keys(colores)},
+  {nombre:"Blusa manga larga",precio:24,tela:"Rib stretch",img:"imagenes/blusamangalarga.jpg",colores:Object.keys(colores)},
+  {nombre:"Blusa formal",precio:26,tela:"Popelina",img:"imagenes/blusaformal.jpg",colores:Object.keys(colores)},
+ ],
+
+ "Pantalones":[
+  {nombre:"Pantalón casual",precio:30,tela:"Algodón",img:"imagenes/pantaloncasual.jpg",colores:Object.keys(colores)},
+  {nombre:"Pantalón jean",precio:34,tela:"Jean",img:"imagenes/pantalonjean.avif",colores:Object.keys(colores)},
+  {nombre:"Pantalón tiro alto",precio:36,tela:"Stretch",img:"imagenes/pantalontiroalto.jpg",colores:Object.keys(colores)},
+  {nombre:"Pantalón formal",precio:38,tela:"Lino",img:"imagenes/pantalonformal.webp",colores:Object.keys(colores)},
+ ]
+};
+
+let carrito=[], total=0;
+
+/* =========================
+   GENERAR FILTROS
+========================= */
+const productosPlano=[];
+const selectCategoria=filtroCategoria;
+const selectTela=filtroTela;
+
+for(let c in categorias){
+ categorias[c].forEach(p=>productosPlano.push({...p,categoria:c}));
+ selectCategoria.innerHTML+=`<option value="${c}">${c}</option>`;
+}
+
+[...new Set(productosPlano.map(p=>p.tela))]
+ .forEach(t=>selectTela.innerHTML+=`<option value="${t}">${t}</option>`);
+
+/* =========================
+   FILTRO COLORES
+========================= */
+let colorActivo="";
+filtroColores.innerHTML+=`
+<span class="badge bg-dark px-3 py-2" style="cursor:pointer"
+onclick="colorActivo=''; aplicarFiltros()">Todos</span>`;
+
+Object.keys(colores).forEach(c=>{
+ filtroColores.innerHTML+=`
+ <span class="color-filter" style="background:${colores[c]}"
+ onclick="seleccionarColorFiltro(this,'${c}')"></span>`;
+});
+
+function seleccionarColorFiltro(el,color){
+ document.querySelectorAll(".color-filter").forEach(e=>e.classList.remove("active"));
+ el.classList.add("active");
+ colorActivo=color;
+ aplicarFiltros();
+}
+
+/* =========================
+   TARJETA PRODUCTO
+========================= */
+function card(p){
+
+ let colorHTML="";
+ p.colores.forEach(c=>{
+  colorHTML+=`
+   <span class="color-dot" style="background:${colores[c]}"
+   onclick="selectColor(this,'${c}')"></span>`;
+ });
+
+ return `
+ <div class="col-md-4 mb-4">
+  <div class="card h-100 shadow-sm">
+   <img src="${p.img}" class="card-img-top">
+
+   <div class="card-body text-center">
+    <h6>${p.nombre}</h6>
+    <p class="fw-bold">$${p.precio}</p>
+    <p class="text-muted small">Tela: ${p.tela}</p>
+
+    <select class="form-select mb-2 talla">
+     <option value="">Talla</option>
+     ${tallas.map(t=>`<option>${t}</option>`).join("")}
+    </select>
+
+    <div class="mb-2 colores" data-color="">
+     ${colorHTML}
+    </div>
+
+    <div class="qty-box mb-2">
+     <button class="btn btn-secondary btn-sm" onclick="cambiarQty(this,-1)">−</button>
+     <span class="qty">1</span>
+     <button class="btn btn-secondary btn-sm" onclick="cambiarQty(this,1)">+</button>
+    </div>
+
+    <button class="btn btn-brand w-100"
+     onclick="agregar(this,'${p.nombre}',${p.precio},'${p.tela}','${p.img}')">
+     Agregar
+    </button>
+   </div>
+  </div>
+ </div>`;
+}
+
+/* =========================
+   SELECTORES
+========================= */
+function selectColor(el,color){
+ const cont=el.parentElement;
+ cont.querySelectorAll(".color-dot").forEach(c=>c.classList.remove("active"));
+ el.classList.add("active");
+ cont.dataset.color=color;
+}
+
+function cambiarQty(btn,val){
+ const span=btn.parentElement.querySelector(".qty");
+ let n=parseInt(span.textContent)+val;
+ if(n<1)n=1;
+ span.textContent=n;
+}
+
+/* =========================
+   CARRITO
+========================= */
+function agregar(btn,nombre,precio,tela,img){
+
+ const body=btn.closest(".card-body");
+ const talla=body.querySelector(".talla").value;
+ const color=body.querySelector(".colores").dataset.color;
+ const qty=parseInt(body.querySelector(".qty").textContent);
+
+ if(!talla||!color){alert("Seleccione talla y color");return;}
+
+ carrito.push({nombre,precio,tela,talla,color,qty,img});
+
+ animarBotonCarrito();
+ animarBotonAgregar(btn);
+
+ render();
+}
+
+/* ⭐ animación en botón agregar */
+function animarBotonAgregar(btn){
+ btn.classList.add("added-anim");
+ setTimeout(()=>btn.classList.remove("added-anim"),450);
+}
+
+/* 🟢 animación & contador flotante */
+function animarBotonCarrito(){
+ const c=document.getElementById("cartCount");
+ c.classList.add("counter-pop");
+ setTimeout(()=>c.classList.remove("counter-pop"),350);
+}
+
+/* ➕➖ modificar cantidad */
+function cambiarCantidadCarrito(i,val){
+ carrito[i].qty+=val;
+ if(carrito[i].qty<=0){ eliminar(i); return; }
+ render();
+}
+
+function eliminar(i){
+ carrito.splice(i,1);
+ render();
+}
+
+function actualizarContadorFlotante(){
+ const totalItems = carrito.reduce((a,b)=>a+b.qty,0);
+ cartCount.textContent = totalItems;
+}
+
+/* =========================
+   RENDER CARRITO + MINI PREVIEW
+========================= */
+function render(){
+
+ total=0;
+ lista.innerHTML="";
+
+ carrito.forEach((p,i)=>{
+  total += p.precio*p.qty;
+
+  lista.innerHTML+=`
+  <li class="list-group-item">
+
+   <div class="d-flex gap-2">
+
+    <img src="${p.img}" class="cart-thumb">
+
+    <div class="flex-grow-1">
+     <strong>${p.nombre}</strong><br>
+     Talla: ${p.talla} — ${p.color}<br>
+     Tela: ${p.tela}<br>
+     $${p.precio}
+    </div>
+
+    <div class="text-end">
+
+     <div class="d-flex align-items-center gap-1 justify-content-end mb-1">
+      <button class="btn btn-outline-secondary btn-sm"
+       onclick="cambiarCantidadCarrito(${i},-1)">−</button>
+
+      <span class="fw-bold">${p.qty}</span>
+
+      <button class="btn btn-outline-secondary btn-sm"
+       onclick="cambiarCantidadCarrito(${i},1)">+</button>
+     </div>
+
+     <button class="btn btn-danger btn-sm" onclick="eliminar(${i})">
+      Eliminar
+     </button>
+
+    </div>
+
+   </div>
+  </li>`;
+ });
+
+ document.getElementById("total").innerText=total;
+
+ actualizarContadorFlotante();
+}
+
+/* =========================
+   BOTÓN FLOTANTE → SCROLL
+========================= */
+function scrollToCarrito(){
+ document.getElementById("panelCarrito")
+ .scrollIntoView({behavior:"smooth"});
+}
+
+/* =========================
+   CONFIRMACIÓN PEDIDO
+========================= */
+function abrirConfirmacionPedido(){
+
+ if(!carrito.length){ alert("El carrito está vacío"); return; }
+
+ let html="";
+ carrito.forEach(p=>{
+  html+=`
+  <div class="mb-2">
+   <strong>${p.nombre}</strong><br>
+   ${p.talla} — ${p.color}<br>
+   ${p.qty} x $${p.precio}
+  </div>`;
+ });
+
+ resumenPedido.innerHTML=html;
+ totalConfirmacion.textContent = `$${total}`;
+
+ new bootstrap.Modal(modalConfirmarPedido).show();
+}
+
+function validarCelularEcuador(n){return /^09\d{8}$/.test(n);}
+
+btnConfirmarEnvio.onclick=()=>{
+
+ if(!validarCelularEcuador(celular.value)){
+  mensajeError.textContent="Ingrese un celular válido de Ecuador";
+  mensajeError.classList.remove("d-none");
+  return;
+ }
+
+ let m="🛍 *Pedido Closet Orion*%0A%0A";
+ m+=`Cliente: ${nombre.value}%0A`;
+ m+=`Dirección: ${direccion.value}%0A`;
+ 
+
+ carrito.forEach(p=>{
+  m+=`• ${p.nombre} — ${p.talla} / ${p.color}%0A`;
+  m+=`  ${p.qty} x $${p.precio}%0A%0A`;
+ });
+
+ m+=`TOTAL: *$${total}*`;
+
+ window.open(`https://wa.me/593959974042?text=${m}`,"_blank");
+
+ carrito=[];
+ render();
+};
+
+/* =========================
+   CATÁLOGO + FILTROS
+========================= */
+function aplicarFiltros(){
+
+ let lista=[...productosPlano];
+
+ const q=buscador.value.toLowerCase();
+ const cat=filtroCategoria.value;
+ const tela=filtroTela.value;
+ const orden=ordenPrecio.value;
+
+ if(q) lista=lista.filter(p=>p.nombre.toLowerCase().includes(q));
+ if(cat!=="todas") lista=lista.filter(p=>p.categoria===cat);
+ if(tela) lista=lista.filter(p=>p.tela===tela);
+ if(colorActivo) lista=lista.filter(p=>p.colores.includes(colorActivo));
+
+ if(orden==="asc") lista.sort((a,b)=>a.precio-b.precio);
+ if(orden==="desc") lista.sort((a,b)=>b.precio-a.precio);
+
+ let html="", catActual="";
+
+ lista.forEach(p=>{
+  if(p.categoria!==catActual){
+   if(catActual!=="") html+="</div>";
+   catActual=p.categoria;
+   html+=`<h3 class="category-title">${catActual}</h3><div class="row">`;
+  }
+  html+=card(p);
+ });
+
+ html+="</div>";
+ catalogo.innerHTML=html;
+}
+
+aplicarFiltros();
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
